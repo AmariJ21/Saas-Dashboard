@@ -1,0 +1,2849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fusion Works — Trades Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0b0d12;
+    --surface: #111520;
+    --surface2: #161c2a;
+    --surface3: #1d2538;
+    --border: #ffffff0f;
+    --border2: #ffffff18;
+    --text: #e8eaf0;
+    --text2: #8b92a8;
+    --text3: #5a6070;
+    --accent: #4f7cff;
+    --accent-glow: #4f7cff30;
+    --accent2: #00d4a8;
+    --accent2-glow: #00d4a820;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --new: #8b5cf6;
+    --scheduled: #3b82f6;
+    --in-progress: #f59e0b;
+    --completed: #22c55e;
+    --paid: #00d4a8;
+    --r: 12px;
+    --r-sm: 8px;
+    --r-lg: 16px;
+    --shadow: 0 4px 24px #00000060;
+    --shadow-lg: 0 12px 40px #00000080;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+  }
+
+  .logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), #7c3aed);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 4px 12px var(--accent-glow);
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text3);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .nav {
+    flex: 1;
+    padding: 16px 12px;
+    overflow-y: auto;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 0 8px;
+    margin: 16px 0 6px;
+  }
+
+  .nav-section-label:first-child { margin-top: 0; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.15s ease;
+    position: relative;
+    user-select: none;
+  }
+
+  .nav-item:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
+
+  .sidebar-footer {
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .user-card:hover { background: var(--surface2); }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--text3); }
+
+  /* ===== MAIN CONTENT ===== */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    height: 60px;
+    min-height: 60px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 7px 12px;
+    gap: 8px;
+    width: 200px;
+  }
+
+  .search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+  }
+
+  .search-bar input::placeholder { color: var(--text3); }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .icon-btn:hover { background: var(--surface3); border-color: var(--border2); }
+
+  .icon-btn .dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--danger);
+    border: 2px solid var(--surface);
+  }
+
+  /* ===== PAGE VIEWS ===== */
+  .page-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== GRID LAYOUTS ===== */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .grid-cols { display: grid; gap: 16px; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 20px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .card-subtitle { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* ===== KPI CARDS ===== */
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gradient, linear-gradient(90deg, var(--accent), #7c3aed));
+  }
+
+  .kpi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .kpi-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  .kpi-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .kpi-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .trend-up { color: var(--success); }
+  .trend-down { color: var(--danger); }
+
+  /* ===== TABLES ===== */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--r);
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead th {
+    background: var(--surface2);
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  tbody td {
+    padding: 12px 16px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .td-light { color: var(--text2); }
+  .td-mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12.5px; }
+
+  /* ===== BADGES ===== */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.7;
+  }
+
+  .badge-new { background: #8b5cf620; color: #a78bfa; }
+  .badge-contacted { background: #3b82f620; color: #60a5fa; }
+  .badge-qualified { background: #f59e0b20; color: #fbbf24; }
+  .badge-converted { background: #22c55e20; color: #4ade80; }
+  .badge-lost { background: #ef444420; color: #f87171; }
+  .badge-scheduled { background: #3b82f620; color: #60a5fa; }
+  .badge-in_progress { background: #f59e0b20; color: #fbbf24; }
+  .badge-completed { background: #22c55e20; color: #4ade80; }
+  .badge-paid { background: #00d4a820; color: #00d4a8; }
+  .badge-active { background: #22c55e20; color: #4ade80; }
+  .badge-invited { background: #f59e0b20; color: #fbbf24; }
+  .badge-inactive { background: var(--surface3); color: var(--text3); }
+  .badge-admin { background: #8b5cf620; color: #a78bfa; }
+  .badge-manager { background: #3b82f620; color: #60a5fa; }
+  .badge-worker { background: #22c55e20; color: #4ade80; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--r-sm);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 2px 8px var(--accent-glow);
+  }
+
+  .btn-primary:hover { background: #6b8fff; transform: translateY(-1px); box-shadow: 0 4px 16px var(--accent-glow); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border-color: var(--border2);
+  }
+
+  .btn-secondary:hover { background: var(--surface3); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border-color: transparent;
+  }
+
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+  .btn-danger {
+    background: var(--danger);
+    color: white;
+  }
+
+  .btn-danger:hover { background: #dc2626; }
+
+  .btn-success {
+    background: var(--success);
+    color: white;
+  }
+
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-sm);
+  }
+
+  /* ===== FILTERS ROW ===== */
+  .filters-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .filter-search {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--r-sm);
+    padding: 8px 12px;
+  }
+
+  .filter-search input {
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 13.5px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+  }
+
+  .filter-search input::placeholder { color: var(--text3); }
+
+  .filter-select {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--r-sm);
+    padding: 8px 28px 8px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a6070' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+  }
+
+  /* ===== MODALS ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: #00000080;
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--r-lg);
+    padding: 28px;
+    width: 520px;
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(12px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-sm .modal { width: 400px; }
+  .modal-lg .modal { width: 680px; }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+
+  .close-btn:hover { background: var(--surface3); color: var(--text); }
+
+  /* ===== FORM ELEMENTS ===== */
+  .form-group { margin-bottom: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r-sm);
+    padding: 10px 12px;
+    font-size: 13.5px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  input::placeholder, textarea::placeholder { color: var(--text3); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ===== KANBAN ===== */
+  .kanban {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+
+  .kanban-col {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 12px;
+  }
+
+  .kanban-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kanban-col-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .kanban-count {
+    background: var(--surface3);
+    color: var(--text3);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+
+  .kanban-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .kanban-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: var(--shadow); }
+
+  .kanban-card-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .kanban-card-client { font-size: 12px; color: var(--text2); }
+  .kanban-card-amount { font-size: 13px; font-weight: 700; color: var(--accent2); margin-top: 8px; }
+  .kanban-card-date { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ===== CALENDAR ===== */
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .cal-nav { display: flex; align-items: center; gap: 8px; }
+  .cal-month-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    min-width: 200px;
+    text-align: center;
+  }
+
+  .cal-views { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-sm); overflow: hidden; }
+  .cal-view-btn {
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text2);
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .cal-view-btn.active { background: var(--accent); color: white; }
+
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border-radius: var(--r); overflow: hidden; }
+
+  .cal-day-header {
+    background: var(--surface2);
+    padding: 10px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+  }
+
+  .cal-day {
+    background: var(--surface);
+    min-height: 110px;
+    padding: 8px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .cal-day:hover { background: var(--surface2); }
+  .cal-day.other-month { opacity: 0.4; }
+  .cal-day.today { background: var(--accent-glow); }
+
+  .cal-day-num {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 6px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .cal-day.today .cal-day-num {
+    background: var(--accent);
+    color: white;
+  }
+
+  .cal-event {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  .cal-event.scheduled { background: #3b82f620; color: #60a5fa; }
+  .cal-event.in_progress { background: #f59e0b20; color: #fbbf24; }
+  .cal-event.completed { background: #22c55e20; color: #4ade80; }
+  .cal-event.new { background: #8b5cf620; color: #a78bfa; }
+
+  /* ===== CHART ===== */
+  .chart-container {
+    height: 180px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 0 4px;
+  }
+
+  .chart-bar-wrap {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .chart-bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, var(--accent), #7c3aed);
+    transition: opacity 0.2s;
+    min-height: 2px;
+    position: relative;
+  }
+
+  .chart-bar:hover { opacity: 0.8; }
+
+  .chart-label {
+    font-size: 9px;
+    color: var(--text3);
+    transform: rotate(-45deg);
+    white-space: nowrap;
+  }
+
+  /* ===== NOTIFICATION FEED ===== */
+  .notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item:hover { background: var(--surface2); }
+  .notif-item.unread { background: var(--accent-glow); }
+  .notif-item.unread:hover { background: var(--accent-glow); filter: brightness(1.2); }
+
+  .notif-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .notif-icon.job { background: #3b82f620; }
+  .notif-icon.lead { background: #8b5cf620; }
+  .notif-icon.payment { background: #00d4a820; }
+  .notif-icon.system { background: #f59e0b20; }
+
+  .notif-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .notif-message { font-size: 12.5px; color: var(--text2); margin-top: 2px; line-height: 1.5; }
+  .notif-time { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  .notif-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+  }
+
+  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .empty-desc { font-size: 14px; color: var(--text2); max-width: 300px; line-height: 1.6; }
+
+  /* ===== LOADING SKELETON ===== */
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ===== BILLING PLAN CARDS ===== */
+  .plan-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 24px;
+    position: relative;
+    transition: all 0.2s;
+  }
+
+  .plan-card.current {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 20px var(--accent-glow);
+  }
+
+  .plan-card.popular { border-color: var(--accent2); }
+
+  .plan-badge {
+    position: absolute;
+    top: -10px;
+    right: 16px;
+    background: var(--accent2);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+
+  .plan-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+  .plan-price { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; color: var(--text); margin: 12px 0 4px; }
+  .plan-price span { font-size: 16px; font-weight: 400; color: var(--text2); }
+  .plan-desc { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+
+  .plan-features { list-style: none; margin-bottom: 24px; }
+  .plan-features li {
+    font-size: 13.5px;
+    color: var(--text2);
+    padding: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .plan-features li::before { content: '✓'; color: var(--accent2); font-weight: 700; }
+
+  /* ===== SETTINGS ===== */
+  .settings-section { margin-bottom: 32px; }
+  .settings-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-label { font-size: 14px; font-weight: 500; }
+  .toggle-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  .toggle {
+    width: 44px;
+    height: 24px;
+    background: var(--surface3);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .toggle.on { background: var(--accent); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* ===== EARNINGS CHART ===== */
+  .rev-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+
+  .rev-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 16px;
+  }
+
+  .rev-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
+  .rev-amount { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--text); margin: 4px 0; }
+  .rev-jobs { font-size: 12px; color: var(--text2); }
+
+  /* ===== REPORTS ===== */
+  .export-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .export-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--r);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .export-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .export-desc { font-size: 13px; color: var(--text2); }
+
+  /* ===== UPCOMING JOBS ===== */
+  .upcoming-job {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .upcoming-job:last-child { border-bottom: none; }
+
+  .upcoming-time {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 50px;
+    text-align: center;
+  }
+
+  .upcoming-date { font-size: 10px; color: var(--text3); text-align: center; margin-top: 1px; }
+
+  .upcoming-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .upcoming-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .upcoming-client { font-size: 12px; color: var(--text2); }
+
+  .upcoming-amount {
+    margin-left: auto;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1100px) {
+    .kanban { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { width: 60px; min-width: 60px; }
+    .logo-text, .logo-sub, .nav-section-label,
+    .nav-item span, .user-info { display: none; }
+    .nav-item { justify-content: center; }
+    .nav-item .nav-icon { margin: 0; }
+    .user-card { justify-content: center; }
+    .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    .kanban { grid-template-columns: 1fr; }
+  }
+
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .mb-16 { margin-bottom: 16px; }
+  .gap-8 { gap: 8px; }
+
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+  .items-start { align-items: flex-start; }
+  .justify-between { justify-content: space-between; }
+  .gap-12 { gap: 12px; }
+  .gap-16 { gap: 16px; }
+  .flex-1 { flex: 1; }
+
+  .text-sm { font-size: 12.5px; }
+  .text-accent { color: var(--accent); }
+  .text-accent2 { color: var(--accent2); }
+  .text-muted { color: var(--text2); }
+  .text-faint { color: var(--text3); }
+  .text-success { color: var(--success); }
+  .text-danger { color: var(--danger); }
+  .font-bold { font-weight: 700; }
+  .font-mono { font-family: monospace; }
+  .w-full { width: 100%; }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11.5px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+
+  .confirm-modal-text {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  .invoice-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .invoice-item:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">FusionWorks</div>
+        <div class="logo-sub">Trades OS</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" onclick="navigate('dashboard', this)">
+      <span class="nav-icon">⊞</span>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="navigate('notifications', this)">
+      <span class="nav-icon">🔔</span>
+      <span>Notifications</span>
+      <span class="nav-badge">3</span>
+    </div>
+
+    <div class="nav-section-label">Work</div>
+    <div class="nav-item" onclick="navigate('leads', this)">
+      <span class="nav-icon">◎</span>
+      <span>Leads</span>
+    </div>
+    <div class="nav-item" onclick="navigate('jobs', this)">
+      <span class="nav-icon">🔧</span>
+      <span>Jobs</span>
+    </div>
+    <div class="nav-item" onclick="navigate('calendar', this)">
+      <span class="nav-icon">📅</span>
+      <span>Calendar</span>
+    </div>
+
+    <div class="nav-section-label">Finance</div>
+    <div class="nav-item" onclick="navigate('earnings', this)">
+      <span class="nav-icon">💰</span>
+      <span>Earnings</span>
+    </div>
+    <div class="nav-item" onclick="navigate('reports', this)">
+      <span class="nav-icon">📊</span>
+      <span>Reports</span>
+    </div>
+
+    <div class="nav-section-label">Admin</div>
+    <div class="nav-item" onclick="navigate('team', this)">
+      <span class="nav-icon">👥</span>
+      <span>Team</span>
+    </div>
+    <div class="nav-item" onclick="navigate('settings', this)">
+      <span class="nav-icon">⚙</span>
+      <span>Settings</span>
+    </div>
+    <div class="nav-item" onclick="navigate('billing', this)">
+      <span class="nav-icon">💳</span>
+      <span>Billing</span>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">AR</div>
+      <div class="user-info">
+        <div class="user-name">Alex Rivera</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">Dashboard</div>
+    <div class="topbar-actions">
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" placeholder="Search anything...">
+      </div>
+      <div class="icon-btn" onclick="navigate('notifications', document.querySelector('.nav-item:nth-child(2)'))">
+        🔔
+        <div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE CONTENT -->
+  <div class="page-content">
+
+    <!-- ==============================
+         DASHBOARD VIEW
+    ============================== -->
+    <div class="view active" id="view-dashboard">
+      <!-- KPI Cards -->
+      <div class="grid-4 mb-16">
+        <div class="kpi-card" style="--gradient: linear-gradient(90deg, #4f7cff, #7c3aed)">
+          <div class="kpi-icon" style="background:#4f7cff20; color:#4f7cff">◎</div>
+          <div class="kpi-label">Total Leads</div>
+          <div class="kpi-value">8</div>
+          <div class="kpi-trend trend-up">▲ 12.5% this month</div>
+        </div>
+        <div class="kpi-card" style="--gradient: linear-gradient(90deg, #f59e0b, #ef4444)">
+          <div class="kpi-icon" style="background:#f59e0b20; color:#f59e0b">🔧</div>
+          <div class="kpi-label">Jobs Today</div>
+          <div class="kpi-value">2</div>
+          <div class="kpi-trend trend-up">▲ 8.3% vs yesterday</div>
+        </div>
+        <div class="kpi-card" style="--gradient: linear-gradient(90deg, #00d4a8, #22c55e)">
+          <div class="kpi-icon" style="background:#00d4a820; color:#00d4a8">💰</div>
+          <div class="kpi-label">Revenue Today</div>
+          <div class="kpi-value">$650</div>
+          <div class="kpi-trend trend-up">▲ 15.2% vs yesterday</div>
+        </div>
+        <div class="kpi-card" style="--gradient: linear-gradient(90deg, #8b5cf6, #4f7cff)">
+          <div class="kpi-icon" style="background:#8b5cf620; color:#8b5cf6">📈</div>
+          <div class="kpi-label">Monthly Revenue</div>
+          <div class="kpi-value">$4,124</div>
+          <div class="kpi-trend trend-up">▲ 22.1% vs last month</div>
+        </div>
+      </div>
+
+      <!-- Recent Leads + Upcoming Jobs -->
+      <div class="grid-2 mb-16">
+        <!-- Recent Leads -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Recent Leads</div>
+              <div class="card-subtitle">Latest inbound requests</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('leads', document.querySelectorAll('.nav-item')[3])">View All →</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Jennifer Park</td>
+                <td class="text-muted">Water Heater</td>
+                <td><span class="badge badge-new">new</span></td>
+                <td class="text-faint text-sm">6h ago</td>
+              </tr>
+              <tr>
+                <td>Ashley Thompson</td>
+                <td class="text-muted">AC Maintenance</td>
+                <td><span class="badge badge-contacted">contacted</span></td>
+                <td class="text-faint text-sm">8h ago</td>
+              </tr>
+              <tr>
+                <td>Marcus Johnson</td>
+                <td class="text-muted">HVAC Install</td>
+                <td><span class="badge badge-new">new</span></td>
+                <td class="text-faint text-sm">1d ago</td>
+              </tr>
+              <tr>
+                <td>Sandra Williams</td>
+                <td class="text-muted">Plumbing</td>
+                <td><span class="badge badge-contacted">contacted</span></td>
+                <td class="text-faint text-sm">2d ago</td>
+              </tr>
+              <tr>
+                <td>David Chen</td>
+                <td class="text-muted">Electrical</td>
+                <td><span class="badge badge-qualified">qualified</span></td>
+                <td class="text-faint text-sm">3d ago</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Upcoming Jobs -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Upcoming Jobs</div>
+              <div class="card-subtitle">Next 7 days</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('jobs', document.querySelectorAll('.nav-item')[4])">View All →</button>
+          </div>
+          <div id="dashUpcoming"></div>
+        </div>
+      </div>
+
+      <!-- Revenue Chart -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Revenue — Last 14 Days</div>
+            <div class="card-subtitle">Daily earnings overview</div>
+          </div>
+          <span class="tag">$12,804 total</span>
+        </div>
+        <div class="chart-container" id="dashChart"></div>
+      </div>
+    </div>
+
+    <!-- ==============================
+         LEADS VIEW
+    ============================== -->
+    <div class="view" id="view-leads">
+      <div class="flex items-center justify-between mb-16">
+        <div class="filters-row" style="flex:1; margin:0">
+          <div class="filter-search">
+            <span style="color:var(--text3)">🔍</span>
+            <input type="text" id="leadSearch" placeholder="Search leads..." oninput="filterLeads()">
+          </div>
+          <select class="filter-select" id="leadStatusFilter" onchange="filterLeads()">
+            <option value="all">All Status</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="qualified">Qualified</option>
+            <option value="converted">Converted</option>
+            <option value="lost">Lost</option>
+          </select>
+          <input type="date" class="filter-select" id="leadDateFilter" onchange="filterLeads()" style="padding:8px 12px">
+        </div>
+        <div class="flex gap-8" style="margin-left:12px">
+          <button class="btn btn-secondary btn-sm" onclick="showModal('csvModal')">⬆ Import CSV</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddLead()">+ Add Lead</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="leadsTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Service</th>
+              <th>Source</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leadsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==============================
+         JOBS VIEW
+    ============================== -->
+    <div class="view" id="view-jobs">
+      <div class="flex items-center justify-between mb-16">
+        <div class="flex gap-8 items-center">
+          <div class="filter-search" style="width:240px">
+            <span style="color:var(--text3)">🔍</span>
+            <input type="text" id="jobSearch" placeholder="Search jobs..." oninput="filterJobs()">
+          </div>
+          <select class="filter-select" id="jobStatusFilter" onchange="filterJobs()">
+            <option value="all">All Status</option>
+            <option value="new">New</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="paid">Paid</option>
+          </select>
+          <div class="flex" style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden">
+            <button class="cal-view-btn active" id="jobViewTable" onclick="setJobView('table', this)">Table</button>
+            <button class="cal-view-btn" id="jobViewKanban" onclick="setJobView('kanban', this)">Kanban</button>
+          </div>
+        </div>
+        <div class="flex gap-8">
+          <button class="btn btn-secondary btn-sm" onclick="showModal('convertModal')">🔄 Convert Lead</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddJob()">+ Add Job</button>
+        </div>
+      </div>
+
+      <div id="jobsTableView">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Client</th>
+                <th>Service</th>
+                <th>Scheduled</th>
+                <th>Status</th>
+                <th>Amount</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="jobsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="jobsKanbanView" style="display:none">
+        <div class="kanban" id="kanbanBoard"></div>
+      </div>
+    </div>
+
+    <!-- ==============================
+         CALENDAR VIEW
+    ============================== -->
+    <div class="view" id="view-calendar">
+      <div class="calendar-header">
+        <div class="cal-nav">
+          <button class="btn btn-secondary btn-sm" onclick="prevMonth()">← Prev</button>
+          <div class="cal-month-title" id="calTitle">Month 2026</div>
+          <button class="btn btn-secondary btn-sm" onclick="nextMonth()">Next →</button>
+        </div>
+        <div class="flex gap-8 items-center">
+          <button class="btn btn-secondary btn-sm" onclick="goToday()">Today</button>
+          <div class="cal-views">
+            <button class="cal-view-btn active">Month</button>
+            <button class="cal-view-btn">Week</button>
+            <button class="cal-view-btn">Day</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddJob()">+ Add Job</button>
+        </div>
+      </div>
+
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- ==============================
+         EARNINGS VIEW
+    ============================== -->
+    <div class="view" id="view-earnings">
+      <div class="rev-summary">
+        <div class="rev-card" style="border-top: 2px solid var(--accent)">
+          <div class="rev-label">Today</div>
+          <div class="rev-amount">$650</div>
+          <div class="rev-jobs">1 job completed</div>
+        </div>
+        <div class="rev-card" style="border-top: 2px solid var(--accent2)">
+          <div class="rev-label">This Week</div>
+          <div class="rev-amount">$3,474</div>
+          <div class="rev-jobs">5 jobs completed</div>
+        </div>
+        <div class="rev-card" style="border-top: 2px solid #8b5cf6">
+          <div class="rev-label">This Month</div>
+          <div class="rev-amount">$4,124</div>
+          <div class="rev-jobs">6 jobs completed</div>
+        </div>
+      </div>
+
+      <div class="card mb-16">
+        <div class="card-header">
+          <div class="card-title">Daily Revenue — Last 30 Days</div>
+          <div class="flex gap-8 items-center">
+            <input type="date" class="filter-select" style="padding:6px 10px; font-size:12px">
+            <span class="text-faint text-sm">to</span>
+            <input type="date" class="filter-select" style="padding:6px 10px; font-size:12px">
+          </div>
+        </div>
+        <div class="chart-container" id="earningsChart"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Payment History</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Client</th>
+                <th>Date</th>
+                <th>Method</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="earningsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================
+         REPORTS VIEW
+    ============================== -->
+    <div class="view" id="view-reports">
+      <div class="card mb-16">
+        <div class="card-header">
+          <div class="card-title">Export Data</div>
+          <div class="card-subtitle">Download your business data as CSV or Excel</div>
+        </div>
+        <div class="flex gap-8 mb-16">
+          <input type="date" class="filter-select">
+          <span class="text-faint" style="align-self:center">to</span>
+          <input type="date" class="filter-select">
+          <button class="btn btn-secondary btn-sm">Apply Range</button>
+        </div>
+        <div class="divider"></div>
+        <div style="display:grid; gap:12px; margin-top:16px">
+          <div class="export-card">
+            <div class="export-icon" style="background:#8b5cf620">◎</div>
+            <div style="flex:1">
+              <div class="export-title">Export Leads</div>
+              <div class="export-desc">All lead data including contact info, status, and source. 8 records ready.</div>
+            </div>
+            <button class="btn btn-primary btn-sm">⬇ CSV</button>
+            <button class="btn btn-secondary btn-sm">⬇ Excel</button>
+          </div>
+          <div class="export-card">
+            <div class="export-icon" style="background:#3b82f620">🔧</div>
+            <div style="flex:1">
+              <div class="export-title">Export Jobs</div>
+              <div class="export-desc">All job records including schedule, status, and billing. 7 records ready.</div>
+            </div>
+            <button class="btn btn-primary btn-sm">⬇ CSV</button>
+            <button class="btn btn-secondary btn-sm">⬇ Excel</button>
+          </div>
+          <div class="export-card">
+            <div class="export-icon" style="background:#00d4a820">💰</div>
+            <div style="flex:1">
+              <div class="export-title">Export Earnings</div>
+              <div class="export-desc">Complete payment history with dates, amounts, and methods. 8 records ready.</div>
+            </div>
+            <button class="btn btn-primary btn-sm">⬇ CSV</button>
+            <button class="btn btn-secondary btn-sm">⬇ Excel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Business Summary</div>
+        </div>
+        <div class="grid-4">
+          <div style="text-align:center; padding:16px 0">
+            <div class="text-faint text-sm">Total Revenue</div>
+            <div style="font-family:'Syne',sans-serif; font-size:24px; font-weight:800; color:var(--accent2)">$12,129</div>
+          </div>
+          <div style="text-align:center; padding:16px 0">
+            <div class="text-faint text-sm">Avg Job Value</div>
+            <div style="font-family:'Syne',sans-serif; font-size:24px; font-weight:800; color:var(--text)">$1,729</div>
+          </div>
+          <div style="text-align:center; padding:16px 0">
+            <div class="text-faint text-sm">Lead Conversion</div>
+            <div style="font-family:'Syne',sans-serif; font-size:24px; font-weight:800; color:var(--accent)">62.5%</div>
+          </div>
+          <div style="text-align:center; padding:16px 0">
+            <div class="text-faint text-sm">Jobs Completed</div>
+            <div style="font-family:'Syne',sans-serif; font-size:24px; font-weight:800; color:var(--text)">7</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================
+         NOTIFICATIONS VIEW
+    ============================== -->
+    <div class="view" id="view-notifications">
+      <div class="flex items-center justify-between mb-16">
+        <div class="text-muted text-sm">3 unread notifications</div>
+        <button class="btn btn-ghost btn-sm" onclick="markAllRead()">✓ Mark all read</button>
+      </div>
+      <div class="card" style="padding:0; overflow:hidden">
+        <div id="notifFeed"></div>
+      </div>
+    </div>
+
+    <!-- ==============================
+         TEAM VIEW
+    ============================== -->
+    <div class="view" id="view-team">
+      <div class="flex items-center justify-between mb-16">
+        <div class="text-muted text-sm">4 members · 1 pending invite</div>
+        <button class="btn btn-primary btn-sm" onclick="showModal('inviteModal')">+ Invite Member</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Jobs Done</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="teamTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==============================
+         SETTINGS VIEW
+    ============================== -->
+    <div class="view" id="view-settings">
+      <div class="grid-2">
+        <div>
+          <div class="settings-section">
+            <div class="settings-title">Account Settings</div>
+            <div class="settings-card">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" value="Alex Rivera">
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" value="alex.r@fusionworks.com">
+              </div>
+              <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" value="(555) 100-2001">
+              </div>
+              <div class="form-actions" style="margin-top:16px; padding-top:16px">
+                <button class="btn btn-primary btn-sm">Save Changes</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-title">Business Settings</div>
+            <div class="settings-card">
+              <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" value="Fusion Works Trades">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Timezone</label>
+                  <select><option>America/Chicago (CST)</option><option>America/New_York (EST)</option><option>America/Los_Angeles (PST)</option></select>
+                </div>
+                <div class="form-group">
+                  <label>Currency</label>
+                  <select><option>USD ($)</option><option>CAD (C$)</option><option>GBP (£)</option></select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Business Address</label>
+                <input type="text" value="1200 Industrial Blvd, Austin, TX 78701">
+              </div>
+              <div class="form-group">
+                <label>Business Phone</label>
+                <input type="tel" value="(555) 900-0001">
+              </div>
+              <div class="form-actions" style="margin-top:16px; padding-top:16px">
+                <button class="btn btn-primary btn-sm">Save Business Info</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="settings-section">
+            <div class="settings-title">Notification Preferences</div>
+            <div class="settings-card" style="padding:8px 20px">
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">Email — New Lead</div>
+                  <div class="toggle-desc">Get notified when a new lead comes in</div>
+                </div>
+                <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+              </div>
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">Email — Job Updates</div>
+                  <div class="toggle-desc">Status changes and technician updates</div>
+                </div>
+                <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+              </div>
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">Email — Payments</div>
+                  <div class="toggle-desc">Payment confirmations and receipts</div>
+                </div>
+                <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+              </div>
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">SMS — New Lead</div>
+                  <div class="toggle-desc">Instant text alerts for new leads</div>
+                </div>
+                <button class="toggle" onclick="this.classList.toggle('on')"></button>
+              </div>
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">SMS — Job Updates</div>
+                  <div class="toggle-desc">Real-time job status via text</div>
+                </div>
+                <button class="toggle" onclick="this.classList.toggle('on')"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-title">App Preferences</div>
+            <div class="settings-card" style="padding:8px 20px">
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">Dark Mode</div>
+                  <div class="toggle-desc">Currently active</div>
+                </div>
+                <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+              </div>
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">Compact View</div>
+                  <div class="toggle-desc">Reduce spacing in tables</div>
+                </div>
+                <button class="toggle" onclick="this.classList.toggle('on')"></button>
+              </div>
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">Show Revenue on Dashboard</div>
+                  <div class="toggle-desc">Display earnings in overview</div>
+                </div>
+                <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================
+         BILLING VIEW
+    ============================== -->
+    <div class="view" id="view-billing">
+      <!-- Current Plan -->
+      <div class="card mb-16" style="border-color: var(--accent); background: linear-gradient(135deg, var(--surface), var(--accent-glow))">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-faint text-sm mb-4">Current Plan</div>
+            <div style="font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--accent)">Professional</div>
+            <div class="text-muted text-sm" style="margin-top:4px">$79/month · Renews March 16, 2026</div>
+          </div>
+          <div style="text-align:right">
+            <div class="badge badge-active" style="margin-bottom:8px">Active</div>
+            <div class="text-faint text-sm">4 team members · Unlimited jobs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plan Cards -->
+      <div class="grid-3 mb-16">
+        <div class="plan-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">$29<span>/mo</span></div>
+          <div class="plan-desc">Perfect for solo operators</div>
+          <ul class="plan-features">
+            <li>Up to 2 team members</li>
+            <li>100 leads/month</li>
+            <li>50 jobs/month</li>
+            <li>Basic reports</li>
+            <li>Email support</li>
+          </ul>
+          <button class="btn btn-secondary w-full">Downgrade</button>
+        </div>
+        <div class="plan-card current">
+          <div class="plan-badge">Current</div>
+          <div class="plan-name" style="color:var(--accent)">Professional</div>
+          <div class="plan-price" style="color:var(--accent)">$79<span>/mo</span></div>
+          <div class="plan-desc">For growing trade businesses</div>
+          <ul class="plan-features">
+            <li>Up to 10 team members</li>
+            <li>Unlimited leads</li>
+            <li>Unlimited jobs</li>
+            <li>Advanced reports + export</li>
+            <li>Priority support</li>
+          </ul>
+          <button class="btn btn-primary w-full">Current Plan</button>
+        </div>
+        <div class="plan-card popular">
+          <div class="plan-badge" style="background:var(--accent2)">Most Popular</div>
+          <div class="plan-name" style="color:var(--accent2)">Enterprise</div>
+          <div class="plan-price">$199<span>/mo</span></div>
+          <div class="plan-desc">For large trade companies</div>
+          <ul class="plan-features">
+            <li>Unlimited team members</li>
+            <li>Unlimited everything</li>
+            <li>Custom integrations</li>
+            <li>White-label options</li>
+            <li>Dedicated account manager</li>
+          </ul>
+          <button class="btn btn-secondary w-full" style="border-color:var(--accent2); color:var(--accent2)">Upgrade</button>
+        </div>
+      </div>
+
+      <!-- Payment Method + Invoices -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Payment Method</div>
+            <button class="btn btn-ghost btn-sm">+ Update</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px; padding:12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm)">
+            <div style="width:48px; height:32px; background:#1a1f3a; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:18px">💳</div>
+            <div>
+              <div style="font-size:14px; font-weight:600">Visa ending in 4242</div>
+              <div class="text-faint text-sm">Expires 08/2027</div>
+            </div>
+            <span class="badge badge-active" style="margin-left:auto">Active</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Invoice History</div>
+          </div>
+          <div class="invoice-item">
+            <div>
+              <div style="font-size:13.5px; font-weight:600">Feb 2026</div>
+              <div class="text-faint text-sm">Professional Plan</div>
+            </div>
+            <span class="badge badge-paid">Paid</span>
+            <div style="text-align:right">
+              <div class="font-bold">$79.00</div>
+              <button class="btn btn-ghost btn-sm" style="font-size:11px; padding:2px 8px">⬇ PDF</button>
+            </div>
+          </div>
+          <div class="invoice-item">
+            <div>
+              <div style="font-size:13.5px; font-weight:600">Jan 2026</div>
+              <div class="text-faint text-sm">Professional Plan</div>
+            </div>
+            <span class="badge badge-paid">Paid</span>
+            <div style="text-align:right">
+              <div class="font-bold">$79.00</div>
+              <button class="btn btn-ghost btn-sm" style="font-size:11px; padding:2px 8px">⬇ PDF</button>
+            </div>
+          </div>
+          <div class="invoice-item">
+            <div>
+              <div style="font-size:13.5px; font-weight:600">Dec 2025</div>
+              <div class="text-faint text-sm">Professional Plan</div>
+            </div>
+            <span class="badge badge-paid">Paid</span>
+            <div style="text-align:right">
+              <div class="font-bold">$79.00</div>
+              <button class="btn btn-ghost btn-sm" style="font-size:11px; padding:2px 8px">⬇ PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-content -->
+</div><!-- /main -->
+
+<!-- ===== MODALS ===== -->
+
+<!-- Add Lead Modal -->
+<div class="modal-overlay" id="addLeadModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="leadModalTitle">Add New Lead</div>
+      <button class="close-btn" onclick="hideModal('addLeadModal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" id="leadName" placeholder="John Smith">
+      </div>
+      <div class="form-group">
+        <label>Phone *</label>
+        <input type="tel" id="leadPhone" placeholder="(555) 000-0000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="leadEmail" placeholder="john@email.com">
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <input type="text" id="leadAddress" placeholder="123 Main St, Austin, TX">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Service Needed</label>
+        <select id="leadService">
+          <option>HVAC Installation</option>
+          <option>HVAC Repair</option>
+          <option>AC Maintenance</option>
+          <option>Furnace Repair</option>
+          <option>Plumbing Repair</option>
+          <option>Electrical Panel</option>
+          <option>Water Heater</option>
+          <option>Commercial HVAC</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Source</label>
+        <select id="leadSource">
+          <option>Website</option>
+          <option>Referral</option>
+          <option>Google Ads</option>
+          <option>Yelp</option>
+          <option>Facebook</option>
+          <option>Nextdoor</option>
+          <option>LinkedIn</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="leadStatus">
+        <option value="new">New</option>
+        <option value="contacted">Contacted</option>
+        <option value="qualified">Qualified</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="leadNotes" placeholder="Details about the job or client..."></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="hideModal('addLeadModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLead()">Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Job Modal -->
+<div class="modal-overlay" id="addJobModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="jobModalTitle">Add New Job</div>
+      <button class="close-btn" onclick="hideModal('addJobModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Job Title *</label>
+      <input type="text" id="jobTitle" placeholder="e.g. AC Installation - Smith Residence">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Client Name *</label>
+        <input type="text" id="jobClient" placeholder="Client name">
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="jobPhone" placeholder="(555) 000-0000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <input type="text" id="jobAddress" placeholder="Job site address">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Service</label>
+        <select id="jobService">
+          <option>HVAC Installation</option>
+          <option>HVAC Repair</option>
+          <option>AC Maintenance</option>
+          <option>Furnace Repair</option>
+          <option>Plumbing Repair</option>
+          <option>Electrical Panel</option>
+          <option>Water Heater</option>
+          <option>Commercial HVAC</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="jobStatus">
+          <option value="new">New</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Scheduled Date</label>
+        <input type="date" id="jobDate">
+      </div>
+      <div class="form-group">
+        <label>Scheduled Time</label>
+        <input type="time" id="jobTime" value="09:00">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Duration (minutes)</label>
+        <input type="number" id="jobDuration" value="120" min="30" step="30">
+      </div>
+      <div class="form-group">
+        <label>Amount ($)</label>
+        <input type="number" id="jobAmount" placeholder="0.00" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="jobNotes" placeholder="Job details, special instructions..."></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="hideModal('addJobModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveJob()">Save Job</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay modal-sm" id="deleteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--danger)">⚠ Confirm Delete</div>
+      <button class="close-btn" onclick="hideModal('deleteModal')">✕</button>
+    </div>
+    <p class="confirm-modal-text">Are you sure you want to delete <strong id="deleteItemName"></strong>? This action cannot be undone.</p>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="hideModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invite Member Modal -->
+<div class="modal-overlay modal-sm" id="inviteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Invite Team Member</div>
+      <button class="close-btn" onclick="hideModal('inviteModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="inviteName" placeholder="Jane Smith">
+    </div>
+    <div class="form-group">
+      <label>Email Address *</label>
+      <input type="email" id="inviteEmail" placeholder="jane@email.com">
+    </div>
+    <div class="form-group">
+      <label>Role</label>
+      <select id="inviteRole">
+        <option value="worker">Worker</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <p class="text-muted text-sm" style="margin-top:8px">They'll receive an invitation email to join your team.</p>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="hideModal('inviteModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="sendInvite()">Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- Convert Lead Modal -->
+<div class="modal-overlay modal-sm" id="convertModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Convert Lead to Job</div>
+      <button class="close-btn" onclick="hideModal('convertModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Select Lead</label>
+      <select id="convertLeadSelect">
+        <option value="">Choose a lead...</option>
+        <option value="lead-001">Marcus Johnson — HVAC Installation</option>
+        <option value="lead-002">Sandra Williams — Plumbing Repair</option>
+        <option value="lead-003">David Chen — Electrical Panel</option>
+        <option value="lead-005">Robert Taylor — Commercial HVAC</option>
+        <option value="lead-006">Jennifer Park — Water Heater</option>
+        <option value="lead-008">Ashley Thompson — AC Maintenance</option>
+      </select>
+    </div>
+    <p class="text-muted text-sm">This will create a new job from the selected lead and mark the lead as converted.</p>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="hideModal('convertModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="convertLead()">Convert to Job</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV Modal -->
+<div class="modal-overlay modal-sm" id="csvModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Import Leads from CSV</div>
+      <button class="close-btn" onclick="hideModal('csvModal')">✕</button>
+    </div>
+    <div style="border: 2px dashed var(--border2); border-radius: var(--r); padding: 40px; text-align: center; margin-bottom: 16px">
+      <div style="font-size:32px; margin-bottom:12px">📄</div>
+      <div style="font-size:14px; font-weight:600; margin-bottom:4px">Drop your CSV file here</div>
+      <div class="text-muted text-sm">or click to browse files</div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:12px">Browse Files</button>
+    </div>
+    <div style="background:var(--surface2); border-radius:var(--r-sm); padding:12px">
+      <div style="font-size:12px; font-weight:600; color:var(--text2); margin-bottom:8px">Required columns:</div>
+      <div style="font-size:12px; color:var(--text3); font-family:monospace">name, phone, email, address, service, source</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="hideModal('csvModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="hideModal('csvModal'); showToast('CSV import coming soon!')">Import (Coming Soon)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Job Detail Modal (Calendar) -->
+<div class="modal-overlay modal-sm" id="jobDetailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="jobDetailTitle">Job Details</div>
+      <button class="close-btn" onclick="hideModal('jobDetailModal')">✕</button>
+    </div>
+    <div id="jobDetailContent"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="hideModal('jobDetailModal')">Close</button>
+      <button class="btn btn-primary">Edit Job</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  padding: 12px 20px;
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 320px;
+"></div>
+
+<script>
+// ===== MOCK DATA =====
+const today = new Date();
+const todayStr = today.toISOString().split('T')[0];
+const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
+const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+const dayAfter = new Date(today); dayAfter.setDate(today.getDate()+2);
+
+const leads = [
+  { id:'lead-001', name:'Marcus Johnson', email:'marcus.johnson@email.com', phone:'(555) 234-5678', address:'1425 Oak Street, Austin, TX', service:'HVAC Installation', status:'new', source:'Website', notes:'Looking for full AC system replacement. 2400 sq ft.', createdAt: new Date(Date.now()-1*864e5).toISOString() },
+  { id:'lead-002', name:'Sandra Williams', email:'sandra.w@homemail.com', phone:'(555) 345-6789', address:'887 Elm Avenue, Austin, TX', service:'Plumbing Repair', status:'contacted', source:'Referral', notes:'Burst pipe in the basement, urgent.', createdAt: new Date(Date.now()-2*864e5).toISOString() },
+  { id:'lead-003', name:'David Chen', email:'dchen@techcorp.io', phone:'(555) 456-7890', address:'2200 Tech Park Blvd, Austin, TX', service:'Electrical Panel Upgrade', status:'qualified', source:'Google Ads', notes:'Office building, 200A upgrade.', createdAt: new Date(Date.now()-3*864e5).toISOString() },
+  { id:'lead-004', name:'Lisa Ramirez', email:'lisa.ramirez@gmail.com', phone:'(555) 567-8901', address:'556 Maple Lane, Austin, TX', service:'Furnace Repair', status:'converted', source:'Yelp', notes:'Heating stopped working.', createdAt: new Date(Date.now()-5*864e5).toISOString() },
+  { id:'lead-005', name:'Robert Taylor', email:'rtaylor@business.net', phone:'(555) 678-9012', address:'903 Commercial Drive, Austin, TX', service:'Commercial HVAC', status:'qualified', source:'LinkedIn', notes:'Restaurant ventilation needed.', createdAt: new Date(Date.now()-4*864e5).toISOString() },
+  { id:'lead-006', name:'Jennifer Park', email:'j.park@parkhouse.com', phone:'(555) 789-0123', address:'112 Cedar Court, Austin, TX', service:'Water Heater Installation', status:'new', source:'Website', notes:'Wants tankless water heater.', createdAt: new Date(Date.now()-6*36e5).toISOString() },
+  { id:'lead-007', name:'Michael Brown', email:'mbrown@outlook.com', phone:'(555) 890-1234', address:'445 Pine Street, Austin, TX', service:'Electrical Wiring', status:'lost', source:'Facebook', notes:'Went with competitor.', createdAt: new Date(Date.now()-10*864e5).toISOString() },
+  { id:'lead-008', name:'Ashley Thompson', email:'ashley.t@homeowners.org', phone:'(555) 901-2345', address:'78 Birch Way, Austin, TX', service:'AC Maintenance', status:'contacted', source:'Nextdoor', notes:'Annual tune-up needed.', createdAt: new Date(Date.now()-8*36e5).toISOString() },
+];
+
+const jobs = [
+  { id:'job-001', title:'Furnace Repair - Ramirez Residence', clientName:'Lisa Ramirez', clientPhone:'(555) 567-8901', address:'556 Maple Lane, Austin, TX', service:'Furnace Repair', status:'in_progress', scheduledDate:todayStr, scheduledTime:'09:00', duration:120, amount:850, notes:'Heat exchanger replacement.' },
+  { id:'job-002', title:'AC Installation - Martinez Home', clientName:'Carlos Martinez', clientPhone:'(555) 111-2222', address:'234 West Ave, Austin, TX', service:'HVAC Installation', status:'scheduled', scheduledDate:todayStr, scheduledTime:'13:00', duration:240, amount:4200, notes:'3-ton Carrier unit.' },
+  { id:'job-003', title:'Electrical Panel Upgrade - Chen Office', clientName:'David Chen', clientPhone:'(555) 456-7890', address:'2200 Tech Park Blvd, Austin, TX', service:'Electrical Panel', status:'scheduled', scheduledDate:tomorrow.toISOString().split('T')[0], scheduledTime:'08:00', duration:360, amount:3800, notes:'200A upgrade.' },
+  { id:'job-004', title:'Plumbing Emergency - Davis Residence', clientName:'Tom Davis', clientPhone:'(555) 222-3333', address:'891 River Road, Austin, TX', service:'Plumbing Emergency', status:'paid', scheduledDate:yesterday.toISOString().split('T')[0], scheduledTime:'10:30', duration:90, amount:650, notes:'Water main break fixed.' },
+  { id:'job-005', title:'AC Maintenance - Thompson Property', clientName:'Ashley Thompson', clientPhone:'(555) 901-2345', address:'78 Birch Way, Austin, TX', service:'AC Maintenance', status:'scheduled', scheduledDate:dayAfter.toISOString().split('T')[0], scheduledTime:'11:00', duration:60, amount:199, notes:'Annual tune-up.' },
+  { id:'job-006', title:'Water Heater Install - Park Residence', clientName:'Jennifer Park', clientPhone:'(555) 789-0123', address:'112 Cedar Court, Austin, TX', service:'Water Heater', status:'paid', scheduledDate:new Date(Date.now()-3*864e5).toISOString().split('T')[0], scheduledTime:'14:00', duration:180, amount:2400, notes:'Navien tankless unit.' },
+  { id:'job-007', title:'Commercial HVAC - Taylor Restaurant', clientName:'Robert Taylor', clientPhone:'(555) 678-9012', address:'903 Commercial Drive, Austin, TX', service:'Commercial HVAC', status:'new', scheduledDate:new Date(Date.now()+4*864e5).toISOString().split('T')[0], scheduledTime:'07:00', duration:480, amount:12500, notes:'Large commercial project.' },
+];
+
+const earnings = [
+  { id:'e1', jobTitle:'Water Heater Install - Park Residence', clientName:'Jennifer Park', amount:2400, date:new Date(Date.now()-3*864e5).toISOString().split('T')[0], paymentMethod:'card' },
+  { id:'e2', jobTitle:'Plumbing Emergency - Davis Residence', clientName:'Tom Davis', amount:650, date:yesterday.toISOString().split('T')[0], paymentMethod:'cash' },
+  { id:'e3', jobTitle:'Electrical Repair - Wilson Home', clientName:'Grace Wilson', amount:425, date:new Date(Date.now()-5*864e5).toISOString().split('T')[0], paymentMethod:'check' },
+  { id:'e4', jobTitle:'HVAC Tune-Up - Moore Property', clientName:'Kevin Moore', amount:199, date:new Date(Date.now()-5*864e5).toISOString().split('T')[0], paymentMethod:'card' },
+  { id:'e5', jobTitle:'Drain Cleaning - Harris Residence', clientName:'Patricia Harris', amount:275, date:new Date(Date.now()-6*864e5).toISOString().split('T')[0], paymentMethod:'card' },
+  { id:'e6', jobTitle:'Bathroom Remodel - Clark Residence', clientName:'Steven Clark', amount:4800, date:new Date(Date.now()-8*864e5).toISOString().split('T')[0], paymentMethod:'transfer' },
+  { id:'e7', jobTitle:'Generator Install - Lewis Property', clientName:'Betty Lewis', amount:3200, date:new Date(Date.now()-10*864e5).toISOString().split('T')[0], paymentMethod:'check' },
+  { id:'e8', jobTitle:'AC Repair - Robinson Home', clientName:'George Robinson', amount:380, date:new Date(Date.now()-12*864e5).toISOString().split('T')[0], paymentMethod:'card' },
+];
+
+const teamMembers = [
+  { id:'t1', name:'Alex Rivera', email:'alex.r@fusionworks.com', phone:'(555) 100-2001', role:'admin', status:'active', joinedAt:'2025-02-16', jobsCompleted:142 },
+  { id:'t2', name:'Jordan Smith', email:'jordan.s@fusionworks.com', phone:'(555) 100-2002', role:'manager', status:'active', joinedAt:'2025-08-20', jobsCompleted:89 },
+  { id:'t3', name:'Casey Morgan', email:'casey.m@fusionworks.com', phone:'(555) 100-2003', role:'worker', status:'active', joinedAt:'2025-11-18', jobsCompleted:34 },
+  { id:'t4', name:'Taylor Brooks', email:'taylor.b@email.com', phone:'', role:'worker', status:'invited', joinedAt:new Date(Date.now()-2*864e5).toISOString().split('T')[0], jobsCompleted:0 },
+];
+
+const notifications = [
+  { id:'n1', type:'job', title:'Job Started', message:"Casey Morgan has started the furnace repair at Lisa Ramirez's residence.", read:false, createdAt:new Date(Date.now()-30*60e3).toISOString() },
+  { id:'n2', type:'lead', title:'New Lead Received', message:'Ashley Thompson submitted a service request for AC Maintenance via Nextdoor.', read:false, createdAt:new Date(Date.now()-2*36e5).toISOString() },
+  { id:'n3', type:'payment', title:'Payment Received', message:'Tom Davis paid $650.00 for Plumbing Emergency. Payment method: Cash.', read:false, createdAt:new Date(Date.now()-5*36e5).toISOString() },
+  { id:'n4', type:'job', title:'Job Completed', message:"Jordan Smith completed the plumbing emergency at Tom Davis's residence.", read:true, createdAt:yesterday.toISOString() },
+  { id:'n5', type:'lead', title:'New Lead Received', message:'Jennifer Park submitted a water heater installation request via your website.', read:true, createdAt:new Date(Date.now()-6*36e5).toISOString() },
+  { id:'n6', type:'system', title:'Team Invitation Sent', message:'An invitation has been sent to Taylor Brooks (taylor.b@email.com).', read:true, createdAt:new Date(Date.now()-2*864e5).toISOString() },
+  { id:'n7', type:'payment', title:'Payment Received', message:'Jennifer Park paid $2,400.00 for Water Heater Installation. Payment method: Card.', read:true, createdAt:new Date(Date.now()-3*864e5).toISOString() },
+];
+
+// State
+let filteredLeads = [...leads];
+let filteredJobs = [...jobs];
+let deleteTarget = null;
+let editingLeadId = null;
+let editingJobId = null;
+let calDate = new Date();
+
+// ===== NAVIGATION =====
+function navigate(page, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-'+page).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles = {
+    dashboard:'Dashboard', leads:'Leads', jobs:'Jobs', calendar:'Calendar',
+    earnings:'Earnings', reports:'Reports & Export', notifications:'Notifications',
+    team:'Team Management', settings:'Settings', billing:'Billing'
+  };
+  document.getElementById('pageTitle').textContent = titles[page] || page;
+
+  if(page === 'leads') renderLeads();
+  if(page === 'jobs') renderJobs();
+  if(page === 'calendar') renderCalendar();
+  if(page === 'earnings') renderEarnings();
+  if(page === 'notifications') renderNotifications();
+  if(page === 'team') renderTeam();
+}
+
+// ===== FORMAT HELPERS =====
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+function fmtTime(t) {
+  const [h,m] = t.split(':');
+  const hr = parseInt(h);
+  return `${hr > 12 ? hr-12 : hr || 12}:${m} ${hr >= 12 ? 'PM' : 'AM'}`;
+}
+function fmtMoney(n) {
+  return '$'+n.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+function timeAgo(iso) {
+  const d = Date.now() - new Date(iso);
+  if(d < 36e5) return Math.floor(d/60e3)+'m ago';
+  if(d < 864e5) return Math.floor(d/36e5)+'h ago';
+  return Math.floor(d/864e5)+'d ago';
+}
+function badge(status) {
+  const labels = {new:'New',contacted:'Contacted',qualified:'Qualified',converted:'Converted',lost:'Lost',scheduled:'Scheduled',in_progress:'In Progress',completed:'Completed',paid:'Paid',active:'Active',invited:'Invited',inactive:'Inactive',admin:'Admin',manager:'Manager',worker:'Worker'};
+  return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
+}
+
+// ===== MODAL FUNCTIONS =====
+function showModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function hideModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
+});
+
+// ===== TOAST =====
+function showToast(msg, success=true) {
+  const t = document.getElementById('toast');
+  t.textContent = (success ? '✅ ' : '❌ ') + msg;
+  t.style.transform = 'translateY(0)';
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.transform = 'translateY(80px)'; t.style.opacity = '0'; }, 3000);
+}
+
+// ===== LEADS =====
+function renderLeads() {
+  const tbody = document.getElementById('leadsTbody');
+  if(!filteredLeads.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:40px">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">No leads found</div>
+      <div class="empty-desc">Try adjusting your filters or add a new lead.</div>
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filteredLeads.map(l => `
+    <tr>
+      <td><div style="font-weight:600">${l.name}</div><div class="text-faint text-sm">${l.email}</div></td>
+      <td class="text-muted">${l.phone}</td>
+      <td>${l.service}</td>
+      <td><span class="tag">${l.source}</span></td>
+      <td>${badge(l.status)}</td>
+      <td class="text-faint text-sm">${timeAgo(l.createdAt)}</td>
+      <td>
+        <div class="flex gap-8">
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="editLead('${l.id}')" title="Edit">✏</button>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="deleteLead('${l.id}', '${l.name}')" title="Delete" style="color:var(--danger)">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterLeads() {
+  const q = document.getElementById('leadSearch').value.toLowerCase();
+  const s = document.getElementById('leadStatusFilter').value;
+  filteredLeads = leads.filter(l => {
+    const matchQ = !q || l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q) || l.service.toLowerCase().includes(q) || l.phone.includes(q);
+    const matchS = s === 'all' || l.status === s;
+    return matchQ && matchS;
+  });
+  renderLeads();
+}
+
+function openAddLead() {
+  editingLeadId = null;
+  document.getElementById('leadModalTitle').textContent = 'Add New Lead';
+  ['leadName','leadPhone','leadEmail','leadAddress','leadNotes'].forEach(id => document.getElementById(id).value='');
+  showModal('addLeadModal');
+}
+
+function editLead(id) {
+  const l = leads.find(x => x.id === id);
+  if(!l) return;
+  editingLeadId = id;
+  document.getElementById('leadModalTitle').textContent = 'Edit Lead';
+  document.getElementById('leadName').value = l.name;
+  document.getElementById('leadPhone').value = l.phone;
+  document.getElementById('leadEmail').value = l.email;
+  document.getElementById('leadAddress').value = l.address;
+  document.getElementById('leadService').value = l.service;
+  document.getElementById('leadSource').value = l.source;
+  document.getElementById('leadStatus').value = l.status;
+  document.getElementById('leadNotes').value = l.notes;
+  showModal('addLeadModal');
+}
+
+function saveLead() {
+  const name = document.getElementById('leadName').value.trim();
+  const phone = document.getElementById('leadPhone').value.trim();
+  if(!name || !phone) { showToast('Name and phone are required', false); return; }
+
+  if(editingLeadId) {
+    const idx = leads.findIndex(l => l.id === editingLeadId);
+    leads[idx] = { ...leads[idx], name, phone, email:document.getElementById('leadEmail').value, address:document.getElementById('leadAddress').value, service:document.getElementById('leadService').value, source:document.getElementById('leadSource').value, status:document.getElementById('leadStatus').value, notes:document.getElementById('leadNotes').value };
+    showToast('Lead updated successfully!');
+  } else {
+    leads.unshift({ id:'lead-'+Date.now(), name, phone, email:document.getElementById('leadEmail').value, address:document.getElementById('leadAddress').value, service:document.getElementById('leadService').value, source:document.getElementById('leadSource').value, status:document.getElementById('leadStatus').value, notes:document.getElementById('leadNotes').value, createdAt:new Date().toISOString() });
+    showToast('Lead added successfully!');
+  }
+  filteredLeads = [...leads];
+  hideModal('addLeadModal');
+  renderLeads();
+}
+
+function deleteLead(id, name) {
+  deleteTarget = { type:'lead', id, name };
+  document.getElementById('deleteItemName').textContent = name;
+  showModal('deleteModal');
+}
+
+function confirmDelete() {
+  if(!deleteTarget) return;
+  if(deleteTarget.type === 'lead') {
+    const idx = leads.findIndex(l => l.id === deleteTarget.id);
+    if(idx > -1) leads.splice(idx,1);
+    filteredLeads = [...leads];
+    renderLeads();
+  }
+  hideModal('deleteModal');
+  showToast('Deleted successfully');
+  deleteTarget = null;
+}
+
+// ===== JOBS =====
+function renderJobs() {
+  const view = document.getElementById('jobViewTable').classList.contains('active') ? 'table' : 'kanban';
+  if(view === 'table') renderJobsTable();
+  else renderKanban();
+}
+
+function filterJobs() {
+  const q = document.getElementById('jobSearch').value.toLowerCase();
+  const s = document.getElementById('jobStatusFilter').value;
+  filteredJobs = jobs.filter(j => {
+    const matchQ = !q || j.title.toLowerCase().includes(q) || j.clientName.toLowerCase().includes(q) || j.service.toLowerCase().includes(q);
+    const matchS = s === 'all' || j.status === s;
+    return matchQ && matchS;
+  });
+  renderJobs();
+}
+
+function setJobView(v, btn) {
+  document.querySelectorAll('#jobViewTable, #jobViewKanban').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('jobsTableView').style.display = v === 'table' ? 'block' : 'none';
+  document.getElementById('jobsKanbanView').style.display = v === 'kanban' ? 'block' : 'none';
+  renderJobs();
+}
+
+function renderJobsTable() {
+  const tbody = document.getElementById('jobsTbody');
+  if(!filteredJobs.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:40px; text-align:center; color:var(--text3)">No jobs match your filters.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filteredJobs.map(j => `
+    <tr>
+      <td><div style="font-weight:600">${j.title}</div></td>
+      <td class="text-muted">${j.clientName}</td>
+      <td><span class="tag">${j.service}</span></td>
+      <td><div>${fmtDate(j.scheduledDate)}</div><div class="text-faint text-sm">${fmtTime(j.scheduledTime)}</div></td>
+      <td>${badge(j.status)}</td>
+      <td style="font-family:'Syne',sans-serif; font-weight:700; color:var(--accent2)">${fmtMoney(j.amount)}</td>
+      <td>
+        <div class="flex gap-8">
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="editJob('${j.id}')" title="Edit">✏</button>
+          <button class="btn btn-ghost btn-sm btn-icon" title="Delete" style="color:var(--danger)">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderKanban() {
+  const statuses = [
+    {id:'new', label:'New', color:'#8b5cf6'},
+    {id:'scheduled', label:'Scheduled', color:'#3b82f6'},
+    {id:'in_progress', label:'In Progress', color:'#f59e0b'},
+    {id:'completed', label:'Completed', color:'#22c55e'},
+    {id:'paid', label:'Paid', color:'#00d4a8'},
+  ];
+  const board = document.getElementById('kanbanBoard');
+  board.innerHTML = statuses.map(s => {
+    const cols = filteredJobs.filter(j => j.status === s.id);
+    return `
+      <div class="kanban-col">
+        <div class="kanban-header">
+          <div class="kanban-col-title" style="color:${s.color}">${s.label}</div>
+          <span class="kanban-count">${cols.length}</span>
+        </div>
+        ${cols.length ? cols.map(j => `
+          <div class="kanban-card" onclick="showJobDetail('${j.id}')">
+            <div class="kanban-card-title">${j.title}</div>
+            <div class="kanban-card-client">${j.clientName}</div>
+            <div class="kanban-card-amount">${fmtMoney(j.amount)}</div>
+            <div class="kanban-card-date">${fmtDate(j.scheduledDate)} ${fmtTime(j.scheduledTime)}</div>
+          </div>
+        `).join('') : `<div style="text-align:center; padding:20px; color:var(--text3); font-size:12px">No jobs</div>`}
+      </div>
+    `;
+  }).join('');
+}
+
+function openAddJob() {
+  editingJobId = null;
+  document.getElementById('jobModalTitle').textContent = 'Add New Job';
+  ['jobTitle','jobClient','jobPhone','jobAddress','jobNotes'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('jobDate').value = todayStr;
+  document.getElementById('jobAmount').value = '';
+  hideModal('jobDetailModal');
+  showModal('addJobModal');
+}
+
+function editJob(id) {
+  const j = jobs.find(x => x.id === id);
+  if(!j) return;
+  editingJobId = id;
+  document.getElementById('jobModalTitle').textContent = 'Edit Job';
+  document.getElementById('jobTitle').value = j.title;
+  document.getElementById('jobClient').value = j.clientName;
+  document.getElementById('jobPhone').value = j.clientPhone;
+  document.getElementById('jobAddress').value = j.address;
+  document.getElementById('jobService').value = j.service;
+  document.getElementById('jobStatus').value = j.status;
+  document.getElementById('jobDate').value = j.scheduledDate;
+  document.getElementById('jobTime').value = j.scheduledTime;
+  document.getElementById('jobDuration').value = j.duration;
+  document.getElementById('jobAmount').value = j.amount;
+  document.getElementById('jobNotes').value = j.notes;
+  showModal('addJobModal');
+}
+
+function saveJob() {
+  const title = document.getElementById('jobTitle').value.trim();
+  const client = document.getElementById('jobClient').value.trim();
+  if(!title || !client) { showToast('Title and client are required', false); return; }
+
+  const jobData = {
+    title, clientName:client,
+    clientPhone:document.getElementById('jobPhone').value,
+    address:document.getElementById('jobAddress').value,
+    service:document.getElementById('jobService').value,
+    status:document.getElementById('jobStatus').value,
+    scheduledDate:document.getElementById('jobDate').value,
+    scheduledTime:document.getElementById('jobTime').value,
+    duration:parseInt(document.getElementById('jobDuration').value),
+    amount:parseFloat(document.getElementById('jobAmount').value)||0,
+    notes:document.getElementById('jobNotes').value,
+  };
+
+  if(editingJobId) {
+    const idx = jobs.findIndex(j => j.id === editingJobId);
+    jobs[idx] = { ...jobs[idx], ...jobData };
+    showToast('Job updated successfully!');
+  } else {
+    jobs.unshift({ id:'job-'+Date.now(), ...jobData, createdAt:new Date().toISOString() });
+    showToast('Job added successfully!');
+  }
+  filteredJobs = [...jobs];
+  hideModal('addJobModal');
+  renderJobs();
+  renderCalendar();
+}
+
+function showJobDetail(id) {
+  const j = jobs.find(x => x.id === id);
+  if(!j) return;
+  document.getElementById('jobDetailTitle').textContent = j.title;
+  document.getElementById('jobDetailContent').innerHTML = `
+    <div style="display:grid; gap:10px">
+      <div class="flex justify-between"><span class="text-muted">Client</span><strong>${j.clientName}</strong></div>
+      <div class="flex justify-between"><span class="text-muted">Phone</span><span>${j.clientPhone||'-'}</span></div>
+      <div class="flex justify-between"><span class="text-muted">Address</span><span style="text-align:right; max-width:60%">${j.address}</span></div>
+      <div class="flex justify-between"><span class="text-muted">Service</span><span>${j.service}</span></div>
+      <div class="flex justify-between"><span class="text-muted">Status</span>${badge(j.status)}</div>
+      <div class="flex justify-between"><span class="text-muted">Date</span><strong>${fmtDate(j.scheduledDate)} at ${fmtTime(j.scheduledTime)}</strong></div>
+      <div class="flex justify-between"><span class="text-muted">Duration</span><span>${j.duration} minutes</span></div>
+      <div class="flex justify-between"><span class="text-muted">Amount</span><strong style="color:var(--accent2)">${fmtMoney(j.amount)}</strong></div>
+      ${j.notes ? `<div class="divider"></div><div class="text-muted text-sm">${j.notes}</div>` : ''}
+    </div>
+  `;
+  showModal('jobDetailModal');
+}
+
+function convertLead() {
+  const sel = document.getElementById('convertLeadSelect').value;
+  if(!sel) { showToast('Please select a lead', false); return; }
+  const lead = leads.find(l => l.id === sel);
+  if(!lead) return;
+  const newJob = {
+    id:'job-'+Date.now(), leadId:sel,
+    title:`${lead.service} - ${lead.name}`,
+    clientName:lead.name, clientEmail:lead.email, clientPhone:lead.phone,
+    address:lead.address, service:lead.service, status:'new',
+    scheduledDate:todayStr, scheduledTime:'09:00', duration:120,
+    amount:0, notes:lead.notes
+  };
+  jobs.unshift(newJob);
+  lead.status = 'converted';
+  filteredJobs = [...jobs];
+  hideModal('convertModal');
+  showToast(`Lead converted to job: ${newJob.title}`);
+  renderJobs();
+}
+
+// ===== CALENDAR =====
+function renderCalendar() {
+  const y = calDate.getFullYear();
+  const m = calDate.getMonth();
+  document.getElementById('calTitle').textContent = calDate.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  let html = dayNames.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+
+  // Fill leading blanks
+  for(let i=0; i<firstDay; i++) html += `<div class="cal-day other-month"></div>`;
+
+  for(let d=1; d<=daysInMonth; d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === todayStr;
+    const dayJobs = jobs.filter(j => j.scheduledDate === dateStr);
+
+    html += `<div class="cal-day ${isToday ? 'today' : ''}" onclick="showToast('Add job for ${dateStr}')">
+      <div class="cal-day-num">${d}</div>
+      ${dayJobs.slice(0,3).map(j => `
+        <div class="cal-event ${j.status}" onclick="event.stopPropagation(); showJobDetail('${j.id}')" title="${j.title}">
+          ${fmtTime(j.scheduledTime)} ${j.clientName}
+        </div>
+      `).join('')}
+      ${dayJobs.length > 3 ? `<div class="text-faint" style="font-size:10px">+${dayJobs.length-3} more</div>` : ''}
+    </div>`;
+  }
+
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function prevMonth() { calDate.setMonth(calDate.getMonth()-1); renderCalendar(); }
+function nextMonth() { calDate.setMonth(calDate.getMonth()+1); renderCalendar(); }
+function goToday() { calDate = new Date(); renderCalendar(); }
+
+// ===== EARNINGS =====
+function renderEarnings() {
+  // Table
+  const tbody = document.getElementById('earningsTbody');
+  tbody.innerHTML = earnings.map(e => `
+    <tr>
+      <td style="font-weight:600">${e.jobTitle}</td>
+      <td class="text-muted">${e.clientName}</td>
+      <td>${fmtDate(e.date)}</td>
+      <td><span class="tag">${e.paymentMethod}</span></td>
+      <td style="font-family:'Syne',sans-serif; font-weight:700; color:var(--accent2)">${fmtMoney(e.amount)}</td>
+    </tr>
+  `).join('');
+
+  // Chart
+  renderEarningsChart();
+}
+
+function renderEarningsChart() {
+  const container = document.getElementById('earningsChart');
+  const data = Array.from({length:30}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate()-(29-i));
+    const isWknd = d.getDay()===0||d.getDay()===6;
+    return { date:d, amount: Math.max(0, (isWknd?800:2200) + Math.floor(Math.random()*1500-500)) };
+  });
+  const max = Math.max(...data.map(d=>d.amount));
+
+  container.innerHTML = data.map((d,i) => {
+    const h = max ? Math.round((d.amount/max)*100) : 0;
+    return `<div class="chart-bar-wrap" title="${d.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}: ${fmtMoney(d.amount)}">
+      <div class="chart-bar" style="height:${h}%"></div>
+      ${i%5===0 ? `<div class="chart-label">${d.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>` : '<div style="height:10px"></div>'}
+    </div>`;
+  }).join('');
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  // Upcoming jobs
+  const upcoming = [...jobs]
+    .filter(j => j.scheduledDate >= todayStr && j.status !== 'paid')
+    .sort((a,b) => (a.scheduledDate+a.scheduledTime).localeCompare(b.scheduledDate+b.scheduledTime))
+    .slice(0,5);
+
+  document.getElementById('dashUpcoming').innerHTML = upcoming.map(j => {
+    const isToday = j.scheduledDate === todayStr;
+    const dayLabel = isToday ? 'Today' : fmtDate(j.scheduledDate);
+    return `<div class="upcoming-job">
+      <div>
+        <div class="upcoming-time">${fmtTime(j.scheduledTime)}</div>
+        <div class="upcoming-date">${dayLabel}</div>
+      </div>
+      <div class="upcoming-divider"></div>
+      <div>
+        <div class="upcoming-title">${j.title}</div>
+        <div class="upcoming-client">${j.clientName}</div>
+      </div>
+      <div class="upcoming-amount">${fmtMoney(j.amount)}</div>
+    </div>`;
+  }).join('') || '<div class="empty-state" style="padding:30px"><div class="empty-icon">📅</div><div class="empty-desc">No upcoming jobs</div></div>';
+
+  // Revenue chart
+  renderDashChart();
+}
+
+function renderDashChart() {
+  const container = document.getElementById('dashChart');
+  const data = Array.from({length:14}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate()-(13-i));
+    const isWknd = d.getDay()===0||d.getDay()===6;
+    return { date:d, amount: Math.max(0, (isWknd?600:2000) + Math.floor(Math.random()*1200-400)) };
+  });
+  const max = Math.max(...data.map(d=>d.amount));
+
+  container.innerHTML = data.map((d,i) => {
+    const h = max ? Math.round((d.amount/max)*100) : 0;
+    return `<div class="chart-bar-wrap" title="${d.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}: ${fmtMoney(d.amount)}">
+      <div class="chart-bar" style="height:${h}%; ${d.date.toDateString()===today.toDateString()?'background:linear-gradient(180deg,var(--accent2),#22c55e)':''}"></div>
+      <div class="chart-label">${d.date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== NOTIFICATIONS =====
+function renderNotifications() {
+  const icons = { job:'🔧', lead:'◎', payment:'💰', system:'⚙' };
+  document.getElementById('notifFeed').innerHTML = notifications.map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'}" onclick="markRead('${n.id}')">
+      <div class="notif-icon ${n.type}">${icons[n.type]}</div>
+      <div style="flex:1">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-message">${n.message}</div>
+        <div class="notif-time">${timeAgo(n.createdAt)}</div>
+      </div>
+      ${n.read ? '' : '<div class="notif-dot"></div>'}
+    </div>
+  `).join('');
+}
+
+function markRead(id) {
+  const n = notifications.find(x => x.id === id);
+  if(n) n.read = true;
+  renderNotifications();
+  updateNotifBadge();
+}
+
+function markAllRead() {
+  notifications.forEach(n => n.read = true);
+  renderNotifications();
+  updateNotifBadge();
+  showToast('All notifications marked as read');
+}
+
+function updateNotifBadge() {
+  const count = notifications.filter(n => !n.read).length;
+  const badge = document.querySelector('.nav-badge');
+  if(badge) badge.textContent = count || '';
+  if(badge) badge.style.display = count ? 'flex' : 'none';
+  const dot = document.querySelector('.icon-btn .dot');
+  if(dot) dot.style.display = count ? 'block' : 'none';
+}
+
+// ===== TEAM =====
+function renderTeam() {
+  const initials = name => name.split(' ').map(w=>w[0]).join('').toUpperCase();
+  document.getElementById('teamTbody').innerHTML = teamMembers.map(m => `
+    <tr>
+      <td>
+        <div class="flex items-center gap-12">
+          <div class="avatar" style="width:36px; height:36px; font-size:12px; background:linear-gradient(135deg, ${m.id==='t1'?'#4f7cff,#7c3aed':m.id==='t2'?'#00d4a8,#22c55e':m.id==='t3'?'#f59e0b,#ef4444':'#8b5cf6,#4f7cff'})">${initials(m.name)}</div>
+          <div>
+            <div style="font-weight:600">${m.name}</div>
+            <div class="text-faint text-sm">${m.email}</div>
+          </div>
+        </div>
+      </td>
+      <td>${badge(m.role)}</td>
+      <td>${badge(m.status)}</td>
+      <td style="font-weight:600">${m.jobsCompleted}</td>
+      <td class="text-muted">${fmtDate(m.joinedAt)}</td>
+      <td>
+        <div class="flex gap-8">
+          <button class="btn btn-ghost btn-sm">Edit</button>
+          ${m.id!=='t1' ? `<button class="btn btn-ghost btn-sm" style="color:var(--danger)">Remove</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function sendInvite() {
+  const name = document.getElementById('inviteName').value.trim();
+  const email = document.getElementById('inviteEmail').value.trim();
+  const role = document.getElementById('inviteRole').value;
+  if(!email) { showToast('Email is required', false); return; }
+  teamMembers.push({ id:'t'+Date.now(), name:name||email.split('@')[0], email, phone:'', role, status:'invited', joinedAt:new Date().toISOString(), jobsCompleted:0 });
+  hideModal('inviteModal');
+  showToast(`Invitation sent to ${email}`);
+  renderTeam();
+}
+
+// ===== INIT =====
+renderDashboard();
+renderCalendar();
+</script>
+</body>
+</html>
