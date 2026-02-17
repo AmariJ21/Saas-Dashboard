@@ -1127,14 +1127,122 @@
   }
 
   @media (max-width: 768px) {
-    .sidebar { width: 60px; min-width: 60px; }
-    .logo-text, .logo-sub, .nav-section-label,
-    .nav-item span, .user-info { display: none; }
-    .nav-item { justify-content: center; }
-    .nav-item .nav-icon { margin: 0; }
-    .user-card { justify-content: center; }
+    /* Hide sidebar entirely on mobile — use bottom tab bar instead */
+    .sidebar { display: none; }
     .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
     .kanban { grid-template-columns: 1fr; }
+    .page-content { padding: 16px 16px 80px; }
+    .topbar { padding: 0 16px; }
+    .filters-row { flex-wrap: wrap; }
+    .form-row { grid-template-columns: 1fr; }
+    /* Hide desktop search bar on mobile — icon-only topbar */
+    .search-bar { display: none; }
+    .topbar { height: 52px; min-height: 52px; }
+    .page-title { font-size: 16px; }
+    /* Make modals full-screen on mobile */
+    .modal { width: 95vw; max-height: 90vh; padding: 20px; border-radius: var(--r); }
+  }
+
+  /* ===== BOTTOM TAB BAR (mobile only) ===== */
+  .bottom-nav {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      background: var(--surface);
+      border-top: 1px solid var(--border2);
+      padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+      gap: 2px;
+    }
+
+    .bottom-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 4px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: none;
+      background: none;
+      position: relative;
+    }
+
+    .bottom-nav-item .tab-icon {
+      font-size: 20px;
+      line-height: 1;
+      display: block;
+    }
+
+    .bottom-nav-item .tab-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text3);
+      font-family: 'DM Sans', sans-serif;
+      white-space: nowrap;
+      display: block;
+    }
+
+    .bottom-nav-item.active .tab-icon {
+      filter: drop-shadow(0 0 6px var(--accent));
+    }
+
+    .bottom-nav-item.active .tab-label {
+      color: var(--accent);
+    }
+
+    .bottom-nav-item:not(.active):hover .tab-label {
+      color: var(--text2);
+    }
+
+    .tab-badge {
+      position: absolute;
+      top: 4px;
+      right: 50%;
+      transform: translateX(10px);
+      background: var(--danger);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 2px solid var(--surface);
+    }
+  }
+
+  /* Slim sidebar on medium screens (tablets) */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar { width: 64px; min-width: 64px; }
+    .logo-text, .logo-sub, .nav-section-label, .user-info { display: none; }
+    .logo { padding: 16px 14px; justify-content: center; }
+    .logo-mark { justify-content: center; }
+    .nav-item { justify-content: center; padding: 10px 8px; }
+    .nav-item .nav-icon {
+      font-size: 20px;
+      width: 24px;
+      text-align: center;
+      display: block !important;
+    }
+    /* Hide only the text label span, not the icon span */
+    .nav-item > span:not(.nav-icon):not(.nav-badge) { display: none; }
+    .nav-badge { position: absolute; top: 4px; right: 4px; }
+    .nav-item { position: relative; }
+    .user-card { justify-content: center; padding: 8px; }
   }
 
   .mt-16 { margin-top: 16px; }
@@ -2800,6 +2908,12 @@ function updateNotifBadge() {
   if(badge) badge.style.display = count ? 'flex' : 'none';
   const dot = document.querySelector('.icon-btn .dot');
   if(dot) dot.style.display = count ? 'block' : 'none';
+  // Sync bottom bar badge
+  const bottomBadge = document.getElementById('bottomBadge');
+  if(bottomBadge) {
+    bottomBadge.textContent = count || '';
+    bottomBadge.style.display = count ? 'flex' : 'none';
+  }
 }
 
 // ===== TEAM =====
@@ -2844,6 +2958,55 @@ function sendInvite() {
 // ===== INIT =====
 renderDashboard();
 renderCalendar();
+
+// Patch navigate to sync bottom nav active state
+const _nav = navigate;
+navigate = function(page, el) {
+  _nav(page, el);
+  document.querySelectorAll('.bottom-nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === page);
+  });
+};
 </script>
+
+<!-- BOTTOM NAV BAR (mobile only) -->
+<nav class="bottom-nav">
+  <button class="bottom-nav-item active" data-page="dashboard"
+    onclick="navigate('dashboard', document.querySelectorAll('.nav-item')[0])">
+    <span class="tab-icon">🏠</span>
+    <span class="tab-label">Home</span>
+  </button>
+  <button class="bottom-nav-item" data-page="leads"
+    onclick="navigate('leads', document.querySelectorAll('.nav-item')[2])">
+    <span class="tab-icon">📋</span>
+    <span class="tab-label">Leads</span>
+  </button>
+  <button class="bottom-nav-item" data-page="jobs"
+    onclick="navigate('jobs', document.querySelectorAll('.nav-item')[3])">
+    <span class="tab-icon">🔧</span>
+    <span class="tab-label">Jobs</span>
+  </button>
+  <button class="bottom-nav-item" data-page="calendar"
+    onclick="navigate('calendar', document.querySelectorAll('.nav-item')[4])">
+    <span class="tab-icon">📅</span>
+    <span class="tab-label">Schedule</span>
+  </button>
+  <button class="bottom-nav-item" data-page="earnings"
+    onclick="navigate('earnings', document.querySelectorAll('.nav-item')[5])">
+    <span class="tab-icon">💰</span>
+    <span class="tab-label">Earnings</span>
+  </button>
+  <button class="bottom-nav-item" data-page="notifications"
+    onclick="navigate('notifications', document.querySelectorAll('.nav-item')[1])">
+    <span class="tab-icon">🔔</span>
+    <span class="tab-label">Alerts</span>
+    <span class="tab-badge" id="bottomBadge">3</span>
+  </button>
+  <button class="bottom-nav-item" data-page="settings"
+    onclick="navigate('settings', document.querySelectorAll('.nav-item')[7])">
+    <span class="tab-icon">⚙️</span>
+    <span class="tab-label">More</span>
+  </button>
+</nav>
 </body>
 </html>
